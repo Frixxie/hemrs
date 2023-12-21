@@ -5,14 +5,22 @@ use axum::{
 use log::info;
 use simple_logger::SimpleLogger;
 use sqlx::PgPool;
+use structopt::StructOpt;
 
 use crate::handlers::{fetch_all_data, store_env_data};
 
 mod env_data;
 mod handlers;
 
+#[derive(Debug, Clone, StructOpt)]
+pub struct Opts {
+    #[structopt(short, long, default_value = "0.0.0.0:65534")]
+    host: String,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
+    let opts = Opts::from_args();
     SimpleLogger::new()
         .with_level(log::LevelFilter::Info)
         .init()
@@ -26,7 +34,7 @@ async fn main() -> Result<(), anyhow::Error> {
         .route("/", post(store_env_data))
         .with_state(connection);
 
-    Server::bind(&"0.0.0.0:3000".parse()?)
+    Server::bind(&opts.host.parse()?)
         .serve(app.into_make_service())
         .await?;
 

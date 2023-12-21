@@ -22,12 +22,12 @@ services:
     ports:
       - 8080:8080
 
-  backend:
-    build: .
-    ports:
-      - '65534:3000'
-    depends_on:
-      - db
+  # backend:
+  #   build: .
+  #   ports:
+  #     - '65534:3000'
+  #   depends_on:
+  #     - db
 
 volumes:
   grafana-storage: {}
