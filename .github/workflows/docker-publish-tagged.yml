@@ -1,14 +1,15 @@
-name: Make
+name: Make-tagged
 
 on:
-  schedule:
-    - cron: '23 12 * * *'
   push:
     branches: [ "master" ]
     # Publish semver tags as releases.
+    tags: [ '*.*.*' ]
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  TAG: ${{ steps.meta.outputs.tags }}
+
 
 jobs:
   build:
@@ -22,4 +23,4 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Publish container 
-        run: make publish_container
+        run: make publish_tagged_container
