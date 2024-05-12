@@ -3,9 +3,10 @@ use sqlx::PgPool;
 
 use super::db_connection_pool::DbConnectionPool;
 
-pub trait Read<TConnection>: Sized
+pub trait Insert<TConnection>
 where
+    Self: Sized,
     TConnection: DbConnectionPool<PgPool>,
 {
-    async fn read(connection: TConnection) -> Result<Self>;
+    async fn insert(self, connection: TConnection) -> Result<()>;
 }
