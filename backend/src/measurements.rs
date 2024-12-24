@@ -24,6 +24,22 @@ pub struct Measurement {
     sensor_name: String,
 }
 
+impl Measurement {
+    pub async fn read_measument_by_ids(
+        device_id: i32,
+        sensor_id: i32,
+        connection: Postgres,
+    ) -> Result<Self> {
+        let pool = connection.get_connection().await;
+        let res = sqlx::query_as::<_, Measurement>("SELECT m.ts AS timestamp, m.value, s.unit, d.name AS device_name, d.location AS device_location, s.name AS sensor_name FROM measurements m JOIN devices d ON d.id = m.device_id JOIN sensors s ON s.id = m.sensor_id where m.device_id = ($1) AND m.sensor_id = ($2) ORDER BY ts")
+            .bind(device_id)
+            .bind(sensor_id)
+            .fetch_one(&pool)
+            .await?;
+        Ok(res)
+    }
+}
+
 impl Insert<Postgres> for Dht11 {
     async fn insert(self, connection: Postgres) -> Result<()> {
         let pool = connection.get_connection().await;

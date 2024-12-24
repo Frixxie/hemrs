@@ -48,36 +48,6 @@ pub async fn store_measurements(
     Ok("OK".to_string())
 }
 
-#[derive(Deserialize, Debug)]
-pub struct InnerMeasurementQuery {
-    pub device_name: String,
-    pub sensor_name: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct MeasurementQuery {
-    query: Option<InnerMeasurementQuery>,
-}
-
-#[instrument]
-pub async fn fetch_latest_measurement(
-    State(pg_pool): State<Postgres>,
-    Query(measurements_query): Query<MeasurementQuery>,
-) -> Result<Json<Measurement>, HandlerError> {
-    let entry = match measurements_query.query {
-        Some(inner) => inner.query(pg_pool).await.map_err(|e| {
-            warn!("Failed with error: {}", e);
-            HandlerError::new(500, format!("Failed to fetch data from database: {}", e))
-        })?,
-        None => Measurement::read(pg_pool).await.map_err(|e| {
-            warn!("Failed with error: {}", e);
-            HandlerError::new(500, format!("Failed to fetch data from database: {}", e))
-        })?,
-    };
-
-    Ok(Json(entry))
-}
-
 #[instrument]
 pub async fn fetch_measurements_count(
     State(pool): State<Postgres>,
@@ -88,6 +58,27 @@ pub async fn fetch_measurements_count(
     })?;
 
     Ok(Json(entry.len()))
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct MeasurementByIdQuery {
+    device_id: i32,
+    sensor_id: i32,
+}
+
+#[instrument]
+pub async fn fetch_measurements_by_ids(
+    State(pool): State<Postgres>,
+    Query(query): Query<MeasurementByIdQuery>,
+) -> Result<Json<Vec<Measurement>>, HandlerError> {
+    let entry = Measurement::read_measument_by_ids(query.device_id, query.sensor_id, pool)
+        .await
+        .map_err(|e| {
+            warn!("Failed with error: {}", e);
+            HandlerError::new(500, format!("Failed to fetch data from database: {}", e))
+        })?;
+
+    Ok(Json(vec![entry]))
 }
 
 #[instrument]

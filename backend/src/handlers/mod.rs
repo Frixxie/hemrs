@@ -5,6 +5,7 @@ use axum::{
     routing::{delete, get, post, put},
     Router,
 };
+use devices::fetch_devices_by_id;
 use metrics::histogram;
 use metrics_exporter_prometheus::PrometheusHandle;
 use sqlx::Pool;
@@ -67,6 +68,7 @@ pub fn create_router(connection: Pool<sqlx::Postgres>, metrics_handler: Promethe
 
     let devices = Router::new()
         .route("/devices", get(fetch_devices))
+        .route("/devices/:id", get(fetch_devices_by_id))
         .route("/devices", post(insert_device))
         .route("/devices", delete(delete_device))
         .route("/devices", put(update_device));

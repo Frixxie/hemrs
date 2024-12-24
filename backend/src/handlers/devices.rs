@@ -1,4 +1,7 @@
-use axum::{extract::State, Json};
+use axum::{
+    extract::{Path, State},
+    Json,
+};
 use tracing::{instrument, warn};
 
 use crate::{
@@ -9,6 +12,18 @@ use crate::{
 };
 
 use super::error::HandlerError;
+
+#[instrument]
+pub async fn fetch_devices_by_id(
+    State(pg_pool): State<Postgres>,
+    Path(id): Path<i32>,
+) -> Result<Json<Vec<Devices>>, HandlerError> {
+    let devices = Devices::read_by_id(pg_pool, id).await.map_err(|e| {
+        warn!("Failed with error: {}", e);
+        HandlerError::new(500, format!("Failed to fetch data from database: {}", e))
+    })?;
+    Ok(Json(vec![devices]))
+}
 
 #[instrument]
 pub async fn fetch_devices(

@@ -26,6 +26,16 @@ impl Devices {
     pub fn new(id: i32, name: String, location: String) -> Self {
         Self { id, name, location }
     }
+
+    pub async fn read_by_id(connection: Postgres, id: i32) -> anyhow::Result<Self> {
+        let pool = connection.get_connection().await;
+        let device =
+            sqlx::query_as::<_, Devices>("SELECT id, name, location FROM devices WHERE id = $1")
+                .bind(id)
+                .fetch_one(&pool)
+                .await?;
+        Ok(device)
+    }
 }
 
 impl Device {
