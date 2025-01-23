@@ -1,7 +1,6 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import {
-        Button,
         Table,
         TableBody,
         TableBodyCell,
@@ -13,24 +12,24 @@
     let { data } = $props();
 </script>
 
-<Button on:click={(_e) => goto("/devices/new")}>New</Button>
-{#await data.devices}
-    <p>Fetching devices</p>
-{:then devices}
+{#await data.sensors then sensors}
     <Table hoverable={true}>
         <TableHead>
             <TableHeadCell>id</TableHeadCell>
             <TableHeadCell>name</TableHeadCell>
-            <TableHeadCell>location</TableHeadCell>
+            <TableHeadCell>unit</TableHeadCell>
         </TableHead>
         <TableBody>
-            {#each devices as device}
+            {#each sensors as sensor}
                 <TableBodyRow
-                    on:click={(_: MouseEvent) => goto(`/devices/${device.id}`)}
+                    on:click={(_: MouseEvent) =>
+                        goto(
+                            `/devices/${data.device_id}/sensors/${sensor.id}/measurements`,
+                        )}
                 >
-                    <TableBodyCell>{device.id}</TableBodyCell>
-                    <TableBodyCell>{device.name}</TableBodyCell>
-                    <TableBodyCell>{device.location}</TableBodyCell>
+                    <TableBodyCell>{sensor.id}</TableBodyCell>
+                    <TableBodyCell>{sensor.name}</TableBodyCell>
+                    <TableBodyCell>{sensor.unit}</TableBodyCell>
                 </TableBodyRow>
             {/each}
         </TableBody>
